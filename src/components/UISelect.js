@@ -31,7 +31,7 @@ const names = [
 
 ];
 
-export default function UISelect({setApiUrl}) {
+export default function UISelect({params, setParams}) {
   const [magType, setMagType] = React.useState([]);
 
   const handleChange = (event) => {
@@ -48,17 +48,20 @@ export default function UISelect({setApiUrl}) {
   };
 
   useEffect(() => {
-   
-    if(!magType.length) return;
-    // &mag_type[]= separador 
-    const separator = "&mag_type[]="
-    const apiUrlBase =  `http://192.168.5.181:3000//api/features?${separator}`
-    const finalUrl = `${apiUrlBase}${magType.join(separator)}`;
-    console.log("DEBUGUER URL",finalUrl)
-    // Función para obtener los datos
-    setApiUrl(finalUrl)
 
- 
+    const newParams = new URLSearchParams(params);
+    newParams.delete('mag_type');
+    // Agrega cada valor del arreglo al parámetro
+    magType.forEach(value => {
+        newParams.append('mag_type', value);
+    });
+
+    console.log("NEW PARAMS2", newParams.toString())
+
+    setParams(newParams)
+
+    window.history.replaceState({}, '', `${window.location.pathname}?${newParams}`);
+
   }, [magType]); 
 
 
