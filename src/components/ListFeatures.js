@@ -2,7 +2,20 @@ import React, { useState, useEffect } from "react";
 import UILisFeatures from "./UIListFeatures";
 import UISelect from "./UISelect";
 import fetchDataFeatures from "../utils/fetchDataFeatures";
-import { Button, TextField, Pagination } from '@mui/material';
+import {
+  Button,
+  TextField,
+  Pagination,
+  Dialog,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import FormComments from "./FormComments";
+import styles from "./FormComments.module.css";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import SearchIcon from "@mui/icons-material/Search";
+import CheckIcon from "@mui/icons-material/Check";
+import ErrorIcon from "@mui/icons-material/Error";
 
 function ListFeatures() {
   const [data, setData] = useState(null);
@@ -15,23 +28,18 @@ function ListFeatures() {
   const [params, setParams] = useState(
     new URLSearchParams(window.location.search)
   );
-  console.log("params aqui", params.toString());
-  //   const apiUrl = 'http://192.168.5.181:3000//api/features?page=1&per_page=2&mag_type%5B%5D=ml'; // Reemplaza con tu URL de API
 
-  // const params =
-  // params.set('nombreDelParametro', 'valorDelParametro');
-  // window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+  const [open, setOpen] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    console.log("CAMBIO", params);
-    // Función para obtener los datos
     const fetchData = async () => {
       try {
         const formatParams = params
           .toString()
           .replaceAll("mag_type", "mag_type[]");
         const finalURL = `${apiUrl}${formatParams}`;
-        console.log("final", finalURL);
         const response = await fetchDataFeatures(finalURL);
         const { data, pagination } = response;
         setData(data);
@@ -43,12 +51,28 @@ function ListFeatures() {
       }
     };
 
-    fetchData(); // Llama a la función al montar el componente
-  }, [params]); // El segundo argumento vacío asegura que se ejecute solo una vez al montar
+    fetchData();
+  }, [params]);
+
+  useEffect(() => {
+    if (!success) return;
+    const timerId = setTimeout(() => {
+      setSuccess(false);
+    }, [6000]);
+
+    return () => clearTimeout(timerId);
+  }, [success]);
+
+  useEffect(() => {
+    if (!error) return;
+    const timerId = setTimeout(() => {
+      setError(false);
+    }, [6000]);
+
+    return () => clearTimeout(timerId);
+  }, [error]);
 
   const handlehangePagination = (event, page) => {
-    console.log("PAGINA ACTUAL", page);
-
     const newParams = new URLSearchParams(params);
     newParams.set("page", page);
     setCurrentPage(page);
@@ -69,7 +93,6 @@ function ListFeatures() {
     } = event;
     const perPage = parseInt(value);
     setPerPage(perPage);
-
   };
 
   const handleButton = () => {
@@ -81,31 +104,85 @@ function ListFeatures() {
       "",
       `${window.location.pathname}?${newParams}`
     );
-  }
+  };
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <div>
       {data ? (
-        <>
-          <TextField
-            id="outlined-basic"
-            label="Cantidad de items por página"
-            type="number"
-            variant="outlined"
-            onChange={handleChange}
-          />
-          <Button onClick={handleButton}>Filtar</Button>
-          <Pagination
-            count={page}
-            page={currentPage}
-            onChange={handlehangePagination}
-          />
-          <UISelect setParams={setParams} params={params} />
+        <div className={styles["main-container"]}>
+          <div className={styles["header"]}>Prueba Gabriel Medina</div>
+          <div className={styles["filters-container"]}>
+            <UISelect
+              setParams={setParams}
+              params={params}
+              setCurrentPage={setCurrentPage}
+            />
+            <Button
+              onClick={handleOpen}
+              variant="contained"
+              startIcon={<AddCircleIcon />}
+            >
+              Añadir Comentarios
+            </Button>
+          </div>
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <div className={styles.dialog}>
+              <FormComments
+                handleClose={handleClose}
+                setSuccess={setSuccess}
+                setError={setError}
+              />
+            </div>
+          </Dialog>
           <UILisFeatures data={data} />
-        </>
+          <div className={styles["filters-main-filter"]}>
+            <div className={styles["filters-per-page"]}>
+              <TextField
+                id="outlined-basic"
+                label="Cantidad de items por página"
+                type="number"
+                variant="outlined"
+                onChange={handleChange}
+                size="small"
+              />
+              <Button
+                onClick={handleButton}
+                startIcon={<SearchIcon />}
+                variant="contained"
+              >
+                Mostrar
+              </Button>
+            </div>
+            <Pagination
+              count={page}
+              page={currentPage}
+              onChange={handlehangePagination}
+            />
+          </div>
+        </div>
       ) : (
-        <p>Loading data...</p>
+        <CircularProgress />
       )}
+      <div className={styles.alerts}>
+        {success && (
+          <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
+            {success}
+          </Alert>
+        )}
+        {error && (
+          <Alert icon={<ErrorIcon fontSize="inherit" />} severity="error">
+            {error}
+          </Alert>
+        )}
+      </div>
     </div>
   );
 }
