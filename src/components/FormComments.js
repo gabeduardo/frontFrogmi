@@ -34,7 +34,7 @@ function FormComments({ handleClose, setSuccess, setError }) {
 
     try {
       const response = await axios.post(
-        `http://192.168.5.181:3000//api/features/${featureId}/comments`,
+        `http://localhost:3000//api/features/${featureId}/comments`,
         formData
       );
       setSuccess("El comentario ha sido creado exitosamente");

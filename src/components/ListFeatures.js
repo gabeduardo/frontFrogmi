@@ -20,7 +20,7 @@ import ErrorIcon from "@mui/icons-material/Error";
 function ListFeatures() {
   const [data, setData] = useState(null);
   const [apiUrl, setApiUrl] = useState(
-    "http://192.168.5.181:3000//api/features?"
+    "http://localhost:3000//api/features?"
   );
   const [page, setPage] = useState(null);
   const [perPage, setPerPage] = useState(null);
